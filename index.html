@@ -1,0 +1,42 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spelling Bee</title>
+    <link rel="stylesheet" href="styles.css" type="text/css">
+    <script src="jszip.min.js" defer></script>
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <h1>Spelling Bee</h1>
+    <p>A test studying tool. Audios are randomized, so order is not important.</p>
+    <div id="i1">
+        <input type="file" id="fileInput" accept="audio/*,.zip" multiple hidden>
+        <div id="playlist"></div>
+        <div id="buttons1">
+            <button onclick="addAudio(); document.getElementById('error').hidden = true;">Add Audio</button>
+            <button onclick="selectAudio();" id="deleteButton">Delete Audio</button>
+            <button onclick="next();" id="nextButton">Start</button>
+            <br>
+            <p id="zip-bad"></p>
+            <input type="checkbox" id="case" checked>
+            <label for="case">Case Insensitive</label>
+        </div>
+        <div id="buttons2" hidden>
+            <button onclick="deleteAudio();">Delete</button>
+            <button onclick="cancel();">Cancel</button>
+        </div>
+    </div>
+    <div id="i2" hidden>
+        <button onclick="back();" id="l1">Back</button>
+        <button onclick="playAudio();" class="l">Listen</button>
+        <button onclick="hint();" class="l">Hint</button>
+        <button onclick="check(this);" id="check">Check</button>
+        <input type="text" id="spell" placeholder="How to spell..." style="width: 100%;" spellcheck="false" onpaste="return false">
+        <p id="hint"></p>
+    </div>
+    <!-- Audio Player -->
+    <audio id="player"></audio>
+</body>
+</html>
