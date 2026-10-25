@@ -28,7 +28,9 @@ fileInput.onchange = async function() {
                     tracks.push({
                         name: name,
                         url: url,
-                        spelling: ""
+                        spelling: document.getElementById("name").checked
+                            ? name.replace(/\.[^.]+$/, "")
+                            : ""
                     });
                 }
             } catch (error) {
@@ -46,7 +48,9 @@ fileInput.onchange = async function() {
                 tracks.push({
                     name: file.name,
                     url: URL.createObjectURL(file),
-                    spelling: ""
+                    spelling: document.getElementById("name").checked
+                        ? file.name.replace(/\.[^.]+$/, "")
+                        : ""
                 });
             }
         }
@@ -65,8 +69,8 @@ function renderPlaylist() {
         input.type = "text";
         input.id = String(index);
         input.placeholder = "enter correct spelling here...";
-        item.append(name, input);
         input.value = track.spelling;
+        item.append(name, input);
         input.oninput = function() {
             track.spelling = input.value;
             updateButtons();
