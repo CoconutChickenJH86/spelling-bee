@@ -4,11 +4,11 @@ body {
     margin: 30px auto;
     padding: 0 15px;
 }
-p, li, button, input, input::placeholder {font-size: 1rem;}
+p, li, button, input, input::placeholder, select, option {font-size: 1rem;}
 .selected {
     background: #ddd;
 }
-button, input[type="text"] {
+button, input[type="text"], select {
     margin: 5px 3px 5px 0;
     padding: 7px 12px;
     cursor: pointer;
@@ -16,3 +16,5 @@ button, input[type="text"] {
 input, label {cursor: pointer}
 input[type="text"] {width: 200px;}
 *[disabled] {cursor: not-allowed !important;}
+#error-message {white-space: pre-line;}
+#zip-bad {color: red;}
