@@ -56,7 +56,7 @@ fileInput1.onchange = async function() {
     try {
         const decodedZip = await JSZip.loadAsync(zipFile);
         const manifest = JSON.parse(await decodedZip.file("manifest.json").async("string"));
-        if (manifest.format !== "spelling-bee") {
+        if (manifest.format !== "spelling-bee" || typeof manifest.tracks !== "object" || manifest.tracks === null || Array.isArray(manifest.tracks)) {
             document.getElementById("zip-bad").textContent = "Your .splbee file is not formatted correctly.";
             setTimeout(() => {
                 document.getElementById("zip-bad").textContent = "";
