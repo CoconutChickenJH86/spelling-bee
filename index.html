@@ -11,13 +11,18 @@
 <body>
     <h1>Spelling Bee</h1>
     <p>A test studying tool. Audios are randomized, so order is not important. If you do not have audio to use, I recommend <a href="https://ttstool.com/" target="_blank">TTS Tool</a> or <a href="https://www.narakeet.com/app/text-to-audio/" target="_blank">Narakeet</a>.</p>
+    <p>Note to coders: please <strong>do not use console</strong>. This site is prone to break if functions are called when they shouldn't be.</p>
     <div id="i1">
         <input type="file" id="fileInput" accept="audio/*,.zip" multiple hidden>
+        <input type="file" id="splBeeFile" accept=".splbee,.zip" hidden>
         <div id="playlist"></div>
         <div id="buttons1">
-            <button onclick="addAudio(); document.getElementById('error').hidden = true;">Add Audio</button>
-            <button onclick="selectAudio();" id="deleteButton">Delete Audio</button>
+            <button onclick="document.getElementById('fileInput').click();">Add Audio(s)</button>
+            <button onclick="document.getElementById('splBeeFile').click();">Import .splbee</button>
+            <button onclick="selectAudio();" id="deleteButton">Delete Audio(s)</button>
+            <button onclick="exportFile();" id="export-file">Export Audio(s)</button>
             <button onclick="next();" id="nextButton">Start</button>
+            <button onclick="editAdvanced(true);" id="advBtn">Advanced Options</button>
             <br>
             <p id="zip-bad"></p>
             <input type="checkbox" id="case" checked>
@@ -37,7 +42,28 @@
         <button onclick="hint();" class="l">Hint</button>
         <button onclick="check(this);" id="check">Check</button>
         <input type="text" id="spell" placeholder="How to spell..." style="width: 100%;" spellcheck="false" onpaste="return false">
+        <select id="partOfSpeechSelect" hidden>
+            <option value="" selected disabled>Part of Speech</option>
+            <option>Noun</option>
+            <option>Pronoun</option>
+            <option>Verb</option>
+            <option>Adverb</option>
+            <option>Adjective</option>
+            <option>Preposition</option>
+            <option>Conjunction</option>
+            <option>Interjection</option>
+        </select>
         <p id="hint"></p>
+        <p id="error-message"></p>
+    </div>
+    <div id="i3" hidden>
+        <button onclick="editAdvanced(false);">Back</button>
+        <br>
+        <input type="checkbox" id="adv1">
+        <label for="adv1">Quiz part of speech</label>
+        <br>
+        <input type="checkbox" id="adv2" hidden>
+        <label for="adv2" hidden>Show definition</label>
     </div>
     <!-- Audio Player -->
     <audio id="player"></audio>
