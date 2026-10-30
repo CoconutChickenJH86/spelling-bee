@@ -1,13 +1,11 @@
 const fileInput = document.getElementById("fileInput");
+const fileInput1 = document.getElementById("splBeeFile");
 const playlist = document.getElementById("playlist");
 const player = document.getElementById("player");
 let tracks = [];
 let selected = [];
 let selecting = false;
 let tracksSpelling = [];
-function addAudio() {
-    fileInput.click();
-}
 fileInput.onchange = async function() {
     for (const file of fileInput.files) {
         if (file.name.toLowerCase().endsWith(".zip")) {
@@ -23,22 +21,18 @@ fileInput.onchange = async function() {
                     })) {
                         continue;
                     }
-                    const blob = await entry.async("blob");
-                    const url = URL.createObjectURL(blob);
                     tracks.push({
                         name: name,
-                        url: url,
-                        spelling: document.getElementById("name").checked
-                            ? name.replace(/\.[^.]+$/, "")
-                            : ""
+                        url: URL.createObjectURL(await entry.async("blob")),
+                        spelling: document.getElementById("name").checked ? name.replace(/\.[^.]+$/, "") : "",
+                        partOfSpeech: ""
                     });
                 }
             } catch (error) {
-                document.getElementById("zip-bad").textContent = "Could not read ZIP file: " + file.name + ". It may be encrypted, corrupted, or unsupported.";
+                document.getElementById("zip-bad").textContent = "Could not read ZIP file: '" + file.name + "'. It may be encrypted, corrupted, or unsupported.";
                 setTimeout(() => {
                     document.getElementById("zip-bad").textContent = "";
                 }, 5000);
-                alert("Could not read ZIP file: " + file.name);
             }
         } else {
             const exists = tracks.some(function(track) {
@@ -48,9 +42,8 @@ fileInput.onchange = async function() {
                 tracks.push({
                     name: file.name,
                     url: URL.createObjectURL(file),
-                    spelling: document.getElementById("name").checked
-                        ? file.name.replace(/\.[^.]+$/, "")
-                        : ""
+                    spelling: document.getElementById("name").checked ? file.name.replace(/\.[^.]+$/, "") : "",
+                    partOfSpeech: ""
                 });
             }
         }
@@ -58,7 +51,52 @@ fileInput.onchange = async function() {
     renderPlaylist();
     fileInput.value = "";
 };
-
+fileInput1.onchange = async function() {
+    const zipFile = fileInput1.files[0];
+    try {
+        const decodedZip = await JSZip.loadAsync(zipFile);
+        const manifest = JSON.parse(await decodedZip.file("manifest.json").async("string"));
+        if (manifest.format !== "spelling-bee") {
+            document.getElementById("zip-bad").textContent = "Your .splbee file is not formatted correctly.";
+            setTimeout(() => {
+                document.getElementById("zip-bad").textContent = "";
+            }, 5000);
+            return;
+        } else if (manifest.version !== 1) {
+            document.getElementById("zip-bad").textContent = "Your .splbee file uses an unsupported version.";
+            setTimeout(() => {
+                document.getElementById("zip-bad").textContent = "";
+            }, 5000);
+            return;
+        }
+        document.getElementById("adv1").checked = manifest.settings.adv1;
+        document.getElementById("adv2").checked = manifest.settings.adv2;
+        for (const track of tracks) {
+            URL.revokeObjectURL(track.url);
+        }
+        tracks.length = 0;
+        for (const obj of manifest.tracks) {
+            const audioFile = decodedZip.file(obj.file);
+            if (!audioFile) {
+                continue;
+            }
+            tracks.push({
+                name: obj.name,
+                url: URL.createObjectURL(await audioFile.async("blob")),
+                spelling: obj.spelling,
+                partOfSpeech: obj.partOfSpeech
+            });
+        }
+        renderPlaylist();
+    } catch (error) {
+        document.getElementById("zip-bad").textContent = error.name + ": " + error.message;
+        setTimeout(() => {
+            document.getElementById("zip-bad").textContent = "";
+        }, 5000);
+    } finally {
+        fileInput1.value = "";
+    }
+};
 function renderPlaylist() {
     playlist.innerHTML = "";
     tracks.forEach(function(track, index) {
@@ -70,7 +108,31 @@ function renderPlaylist() {
         input.id = String(index);
         input.placeholder = "enter correct spelling here...";
         input.value = track.spelling;
-        item.append(name, input);
+        let input1 = "";
+        if (document.getElementById("adv1").checked) {
+            input1 = document.createElement("select");
+            input1.id = "speech" + index;
+            input1.onchange = function() {
+                track.partOfSpeech = input1.value;
+                updateButtons();
+            };
+            const firstOption = document.createElement("option");
+            firstOption.textContent = "Part of Speech";
+            firstOption.selected = firstOption.disabled = true;
+            firstOption.value = "";
+            input1.appendChild(firstOption);
+            ["Noun", "Pronoun", "Verb", "Adverb", "Adjective", "Preposition", "Conjunction", "Interjection"].forEach(item => {
+                const option = document.createElement("option");
+                option.textContent = item;
+                input1.appendChild(option);
+            });
+            input1.value = track.partOfSpeech;
+        }
+        item.append(name, input, input1);
+        input.disabled = selecting;
+        if (input1 instanceof HTMLSelectElement) {
+            input1.disabled = selecting;
+        }
         input.oninput = function() {
             track.spelling = input.value;
             updateButtons();
@@ -99,7 +161,7 @@ function selectAudio() {
     selecting = true;
     selected = [];
     renderPlaylist();
-    playlist.querySelectorAll("input").forEach(function(input) {
+    playlist.querySelectorAll("input, select").forEach(function(input) {
         input.disabled = true;
     });
 }
@@ -140,65 +202,77 @@ function playAudio() {
 function next() {
     tracksSpelling = [];
     for (const obj of tracks) {
-        tracksSpelling.push([obj.name, obj.url, obj.spelling.trim()]);
+        let arr = [obj.name, obj.url, obj.spelling.trim()];
+        if (obj.partOfSpeech) {
+            arr.push(obj.partOfSpeech);
+        }
+        tracksSpelling.push(arr);
     }
     for (let i = tracksSpelling.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [tracksSpelling[i], tracksSpelling[j]] = [tracksSpelling[j], tracksSpelling[i]];
     }
+    document.getElementById("partOfSpeechSelect").hidden = !document.getElementById("adv1").checked;
     document.getElementById("i1").hidden = true;
     document.getElementById("i2").hidden = false;
 }
-function back() {
+function back(next = false) {
     player.pause();
     player.currentTime = 0;
-    tracksSpelling = [];
     document.getElementById("l1").disabled = false;
     document.querySelectorAll(".l").forEach(function(element) {
         element.disabled = false;
     });
     document.getElementById("check").textContent = "Check";
     document.getElementById("spell").disabled = false;
+    document.getElementById("partOfSpeechSelect").disabled = false;
     document.getElementById("spell").value = "";
+    document.getElementById("partOfSpeechSelect").value = "";
     document.getElementById("hint").textContent = "";
-    document.getElementById("i1").hidden = false;
-    document.getElementById("i2").hidden = true;
+    document.getElementById("error-message").textContent = "";
+    if (!next) {
+        tracksSpelling = [];
+        document.getElementById("i1").hidden = false;
+        document.getElementById("i2").hidden = true;
+    }
 }
 function check(button) {
     if (button.textContent === "Check") {
         player.pause();
         player.currentTime = 0;
         const value = document.getElementById("spell").value.trim();
-        if (document.getElementById("spell").value.trim() === "") {
+        let errorMessage = [];
+        let correct = true;
+        if (!value || (document.getElementById("adv1").checked && !document.getElementById("partOfSpeechSelect").value)) {
             return;
-        } else if ((value === tracksSpelling[0][2]
-                   && !document.getElementById("case").checked)
-                   || (value.toLowerCase() === tracksSpelling[0][2].toLowerCase()
-                   && document.getElementById("case").checked)) {
-            document.getElementById("spell").value = "Correct!";
+        }
+        if ((value !== tracksSpelling[0][2] && !document.getElementById("case").checked) || (value.toLowerCase() !== tracksSpelling[0][2].toLowerCase() && document.getElementById("case").checked)) {
+            errorMessage.push(`Correct spelling is: '${tracksSpelling[0][2]}'.`);
+            correct = false;
+        }
+        if (document.getElementById("adv1").checked && tracksSpelling[0][3] !== document.getElementById("partOfSpeechSelect").value) {
+            errorMessage.push(`Correct part of speech is: '${tracksSpelling[0][3]}'.`);
+            correct = false;
+        }
+        if (correct) {
+            errorMessage.push("Correct!");
             tracksSpelling.shift();
         } else {
-            document.getElementById("spell").value = `Incorrect! Correct spelling is: '${tracksSpelling[0][2]}'.`;
+            errorMessage.unshift("Incorrect!");
             tracksSpelling.push(tracksSpelling.shift());
         }
         document.getElementById("spell").disabled = true;
+        document.getElementById("partOfSpeechSelect").disabled = true;
         button.textContent = tracksSpelling.length === 0 ? "Finish" : "Next";
         if (tracksSpelling.length === 0) {document.getElementById("l1").disabled = true;}
         document.querySelectorAll(".l").forEach(function(element) {
             element.disabled = true;
         });
+        document.getElementById("error-message").textContent = errorMessage.join("\n");
+    } else if (button.textContent === "Next") {
+        back(true);
     } else {
-        if (tracksSpelling.length === 0) {
-            back();
-        }
-        document.getElementById("l1").disabled = false;
-        document.querySelectorAll(".l").forEach(function(element) {
-            element.disabled = false;
-        });
-        button.textContent = "Check";
-        document.getElementById("spell").disabled = false;
-        document.getElementById("spell").value = "";
-        document.getElementById("hint").textContent = "";
+        back();
     }
 }
 function hint() {
@@ -211,9 +285,75 @@ function hint() {
     document.getElementById("hint").textContent = "Hint: " + hint;
 }
 function updateButtons() {
-    document.getElementById("nextButton").disabled = tracks.length === 0 || tracks.some(function(track) {
-        return track.spelling.trim() === "";
-    });
+    document.getElementById("nextButton").disabled = document.getElementById("export-file").disabled = tracks.length === 0
+        || tracks.some(function(track) {return !track.spelling.trim()
+        || (document.getElementById("adv1").checked && !track.partOfSpeech)});
     document.getElementById("deleteButton").disabled = tracks.length === 0;
 }
 updateButtons();
+
+function editAdvanced(fOrB) {
+    document.getElementById("i1").hidden = fOrB;
+    document.getElementById("i3").hidden = !fOrB;
+}
+document.getElementById("adv1").addEventListener("change", (e) => {
+    if (!e.target.checked) {
+        tracks.forEach(function(track) {
+            track.partOfSpeech = "";
+        });
+    }
+    renderPlaylist();
+});
+document.getElementById("adv2").addEventListener("change", (e) => {
+    renderPlaylist();
+});
+async function exportFile() {
+    const zip = new JSZip();
+    const audioFolder = zip.folder("audio");
+    const manifest = {
+        format: "spelling-bee",
+        version: 1,
+        settings: {
+            adv1: document.getElementById("adv1").checked,
+            adv2: document.getElementById("adv2").checked
+        },
+        tracks: []
+    };
+    try {
+        document.getElementById("export-file").disabled = true;
+        for (let i = 0; i < tracks.length; i++) {
+            const track = tracks[i];
+            const response = await fetch(track.url);
+            const blob = await response.blob();
+            const extension = track.name.match(/\.[^.]+$/)?.[0] || "";
+            const filename = i + extension;
+            const path = "audio/" + filename;
+            audioFolder.file(filename, blob);
+            manifest.tracks.push({
+                name: track.name,
+                file: path,
+                spelling: track.spelling,
+                partOfSpeech: track.partOfSpeech
+            });
+        }
+        zip.file("manifest.json", JSON.stringify(manifest, "\n", 4));
+        const zipBlob = await zip.generateAsync({
+            type: "blob"
+        });
+        const url = URL.createObjectURL(zipBlob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "unnamed.splbee";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => {URL.revokeObjectURL(url)}, 1000);
+    } catch (error) {
+        document.getElementById("zip-bad").textContent = "Export failed: " + error.message;
+        setTimeout(() => {
+            document.getElementById("zip-bad").textContent = "";
+        }, 5000);
+    } finally {
+        updateButtons();
+    }
+}
