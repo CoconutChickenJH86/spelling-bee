@@ -69,6 +69,7 @@ fileInput1.onchange = async function() {
             }, 5000);
             return;
         }
+        document.getElementById("case").checked = manifest.settings.case;
         document.getElementById("adv1").checked = manifest.settings.adv1;
         document.getElementById("adv2").checked = manifest.settings.adv2;
         for (const track of tracks) {
@@ -314,6 +315,7 @@ async function exportFile() {
         format: "spelling-bee",
         version: 1,
         settings: {
+            case: document.getElementById("case").checked,
             adv1: document.getElementById("adv1").checked,
             adv2: document.getElementById("adv2").checked
         },
