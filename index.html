@@ -22,7 +22,6 @@
             <button onclick="selectAudio();" id="deleteButton">Delete Audio(s)</button>
             <button onclick="exportFile();" id="export-file">Export Audio(s)</button>
             <button onclick="next();" id="nextButton">Start</button>
-            <button onclick="editAdvanced(true);" id="advBtn">Advanced Options</button>
             <br>
             <p id="zip-bad"></p>
             <input type="checkbox" id="case" checked>
@@ -30,6 +29,12 @@
             <br>
             <input type="checkbox" id="name">
             <label for="name">Set spelling to name</label>
+            <br>
+            <input type="checkbox" id="adv1">
+            <label for="adv1">Quiz part of speech</label>
+            <br>
+            <input type="checkbox" id="adv2">
+            <label for="adv2">Quiz definition (3 or more unique definitions only)</label>
         </div>
         <div id="buttons2" hidden>
             <button onclick="deleteAudio();">Delete</button>
@@ -41,29 +46,26 @@
         <button onclick="playAudio();" class="l">Listen</button>
         <button onclick="hint();" class="l">Hint</button>
         <button onclick="check(this);" id="check">Check</button>
-        <input type="text" id="spell" placeholder="How to spell..." style="width: 100%;" spellcheck="false" onpaste="return false">
-        <select id="partOfSpeechSelect" hidden>
-            <option value="" selected disabled>Part of Speech</option>
-            <option>Noun</option>
-            <option>Pronoun</option>
-            <option>Verb</option>
-            <option>Adverb</option>
-            <option>Adjective</option>
-            <option>Preposition</option>
-            <option>Conjunction</option>
-            <option>Interjection</option>
-        </select>
+        <div id="css1">
+            <select id="partOfSpeechSelect" hidden>
+                <option value="" selected disabled>Part of Speech</option>
+                <option>Noun</option>
+                <option>Pronoun</option>
+                <option>Verb</option>
+                <option>Adverb</option>
+                <option>Adjective</option>
+                <option>Preposition</option>
+                <option>Conjunction</option>
+                <option>Interjection</option>
+            </select>
+            <input type="text" id="spell" placeholder="How to spell..." spellcheck="false" onpaste="return false">
+        </div>
+        <div id="definitionQuiz" hidden>
+            Choose correct definition:
+            <div id="dQuizContainer"></div>
+        </div>
         <p id="hint"></p>
         <p id="error-message"></p>
-    </div>
-    <div id="i3" hidden>
-        <button onclick="editAdvanced(false);">Back</button>
-        <br>
-        <input type="checkbox" id="adv1">
-        <label for="adv1">Quiz part of speech</label>
-        <br>
-        <input type="checkbox" id="adv2" hidden>
-        <label for="adv2" hidden>Show definition</label>
     </div>
     <!-- Audio Player -->
     <audio id="player"></audio>
