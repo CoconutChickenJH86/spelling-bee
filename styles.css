@@ -1,20 +1,53 @@
+@media (prefers-color-scheme: dark) {
+    html {
+        filter: invert(1);
+    }
+}
 body {
     font-family: system-ui, sans-serif;
     max-width: 600px;
     margin: 30px auto;
     padding: 0 15px;
 }
-p, li, button, input, input::placeholder, select, option {font-size: 1rem;}
+html {
+    background: white;
+}
+p, li, button, input, input::placeholder, select, option, div {font-size: 1rem; color: black;}
 .selected {
     background: #ddd;
 }
-button, input[type="text"], select {
-    margin: 5px 3px 5px 0;
+button, select {
+    margin: 5px 0;
     padding: 7px 12px;
     cursor: pointer;
 }
+#definitionQuiz, input[type="text"] {
+    margin: 5px 0;
+    padding: 7px 12px;
+}
+input[type="text"] {cursor: text;}
+#definitionQuiz {
+    border: 1px solid #777;
+    border-radius: 1px;
+}
 input, label {cursor: pointer}
-input[type="text"] {width: 200px;}
+input[type="text"], select {
+    box-sizing: border-box;
+    width: 100%;
+}
 *[disabled] {cursor: not-allowed !important;}
 #error-message {white-space: pre-line;}
 #zip-bad {color: red;}
+div.inputs {
+    display: grid;
+    grid-template-columns: 1fr 73%;
+    gap: 10px;
+    box-sizing: border-box;
+    width: 100%;
+}
+.item {
+    padding: 5px 10px;
+    box-sizing: border-box;
+    width: 100%;
+}
+label {cursor: text;}
