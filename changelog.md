@@ -19,3 +19,8 @@ Changelog
 * updated export validity
 * updated exported manifest.json format with definition with v2
 * added dark mode
+
+## 2026-11-04 | v1.1.2
+
+* fixed `updateButton()` bug on `d1`
+* added trimming to definition
