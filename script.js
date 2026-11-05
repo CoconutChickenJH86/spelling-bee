@@ -216,7 +216,7 @@ function playAudio() {
 function next() {
     tracksSpelling = [];
     for (const obj of tracks) {
-        tracksSpelling.push([obj.name, obj.url, obj.spelling.trim(), obj.partOfSpeech, obj.definition]);
+        tracksSpelling.push([obj.name, obj.url, obj.spelling.trim(), obj.partOfSpeech, obj.definition.trim()]);
     }
     for (let i = tracksSpelling.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -336,11 +336,11 @@ function quizDefinition() {
         let picked;
         while (true) {
             picked = tracks[Math.floor(Math.random() * tracks.length)];
-            if (!options.includes(picked.definition)) {
+            if (!options.includes(picked.definition.trim())) {
                 break;
             }
         }
-        options.push(picked.definition);
+        options.push(picked.definition.trim());
     }
     for (let i = 2; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -365,16 +365,15 @@ function updateButtons() {
     if (document.getElementById("adv2").checked) {
         let definitions = new Set();
         for (const obj of tracks) {
-            definitions.add(obj.definition);
+            definitions.add(obj.definition.trim());
         }
         d1 = definitions.size > 2;
     }
     document.getElementById("nextButton").disabled = tracks.length === 0
         || tracks.some(function(track) {return !track.spelling.trim()
         || (document.getElementById("adv1").checked && !track.partOfSpeech)
-        || (document.getElementById("adv2").checked && !track.definition)}
-        || document.getElementById("adv2").checked && !d1
-    );
+        || (document.getElementById("adv2").checked && !track.definition.trim())})
+        || document.getElementById("adv2").checked && !d1;
     document.getElementById("deleteButton").disabled = document.getElementById("export-file").disabled = tracks.length === 0;
 }
 updateButtons();
